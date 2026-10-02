@@ -1,0 +1,6 @@
+{
+  "name": "PMEx Portal",
+  "description": "Modern enterprise analytics dashboard for PMEx Portal spreadsheets, eligibility verification, and operations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
