@@ -7,9 +7,11 @@ export interface StatMetric {
   label: string;
   value: number | string;
   formattedValue: string;
+  secondaryValue?: string;
   sublabel: string;
   change: number;
   changeType: 'increase' | 'decrease' | 'neutral';
+  ringProgress: number; // 0 to 100 for the top-right radial indicator
   timeframe: string;
   iconName: 'file-text' | 'clipboard-check' | 'users' | 'table-cells' | 'shield-check';
   badgeNote?: string;
@@ -26,7 +28,7 @@ export interface ActivityDataPoint {
 }
 
 export interface EligibilityStatusData {
-  status: 'Eligible' | 'Pending' | 'Under Review' | 'Rejected';
+  status: 'Eligible' | 'Pending' | 'Rejected';
   count: number;
   percentage: number;
   color: string;

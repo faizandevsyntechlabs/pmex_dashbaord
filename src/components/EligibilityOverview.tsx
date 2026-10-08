@@ -3,10 +3,9 @@ import {
   FileCheck,
   CheckCircle2,
   Clock,
-  AlertCircle,
   XCircle,
   ArrowRight,
-  Filter,
+  MoreVertical,
 } from 'lucide-react';
 import { EligibilityStatusData } from '../types/dashboard';
 
@@ -19,175 +18,220 @@ export const EligibilityOverview: React.FC<EligibilityOverviewProps> = ({
   data,
   onNavigateToEligibility,
 }) => {
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [activeStatus, setActiveStatus] = useState<'Eligible' | 'Pending' | 'Rejected'>('Eligible');
 
   const totalRecords = data.reduce((acc, curr) => acc + curr.count, 0);
+  const selectedItem = data.find((d) => d.status === activeStatus) || data[0];
 
-  // SVG Donut calculation
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  let accumulatedOffset = 0;
+  // Semi-circular arch math (radius = 62, half-circumference = PI * 62 = 194.78)
+  const archRadius = 62;
+  const halfCircumference = Math.PI * archRadius;
+  const archOffset = halfCircumference - (selectedItem.percentage / 100) * halfCircumference;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Eligible':
-        return <CheckCircle2 className="h-4 w-4 text-[#3F9A4B]" />;
+        return <CheckCircle2 className="h-5 w-5 text-[#2E4A25]" />;
       case 'Pending':
-        return <Clock className="h-4 w-4 text-[#AAD39C]" />;
-      case 'Under Review':
-        return <AlertCircle className="h-4 w-4 text-[#2E4A25]" />;
+        return <Clock className="h-5 w-5 text-[#2E4A25]" />;
       case 'Rejected':
       default:
-        return <XCircle className="h-4 w-4 text-[#505050]" />;
+        return <XCircle className="h-5 w-5 text-[#2E4A25]" />;
     }
   };
 
   return (
-    <div className="flex flex-col justify-between rounded-3xl border border-[#E0E0DA] bg-white p-5 lg:col-span-6 shadow-xs">
-      {/* Card Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#E0E0DA]/70">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F8FBF0] text-[#3F9A4B] border border-[#AAD39C]/40">
-            <FileCheck className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-[#2E4A25]">
-              Eligibility Status Breakdown
-            </h3>
-            <p className="text-[11px] text-[#505050]">
-              Automated and manual compliance verifications
-            </p>
-          </div>
+    <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
+      {/* Section Header */}
+      <div className="flex items-center justify-between px-1">
+        <div>
+          <span className="text-[10px] font-bold tracking-[0.12em] text-[#3F9A20] uppercase block">
+            Compliance & Verification
+          </span>
+          <h3 className="text-base font-extrabold text-[#2E4A25] tracking-tight">
+            Eligibility Status Breakdown
+          </h3>
         </div>
-
         <button
           type="button"
           onClick={() => onNavigateToEligibility()}
-          className="flex items-center gap-1 text-xs font-semibold text-[#3F9A4B] hover:text-[#2E4A25] transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-[#3F9A4B] hover:text-[#2E4A25] transition-colors"
         >
-          <span>View All</span>
+          <span>All Records</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      {/* Donut and Legend Row */}
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
-        {/* Donut Chart */}
-        <div className="sm:col-span-5 flex flex-col items-center justify-center">
-          <div className="relative h-44 w-44">
-            <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
-              {/* Background circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                stroke="#F8FBF0"
-                strokeWidth="11"
-                fill="transparent"
-              />
+      {/* Asymmetric Split Layout Inspired by Screenshot 2:
+          Left: Signature Green Arch-Gauge Card
+          Right: Stacked White Floating Status Cards with Mini Radial Rings */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 flex-1">
+        {/* Left Focal Card: Semi-Circular Gauge Arch Card */}
+        <div
+          onClick={() => onNavigateToEligibility(selectedItem.status)}
+          className="sm:col-span-6 relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#3F9A4B] to-[#2E4A25] p-5 text-white shadow-[0_14px_30px_-8px_rgba(46,74,37,0.28)] flex flex-col justify-between cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+        >
+          {/* Top bar */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold tracking-wide text-[#AAD39C] uppercase">
+              {selectedItem.status} Ratio
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigateToEligibility();
+              }}
+              aria-label="Eligibility options"
+              className="text-white/70 hover:text-white p-1 rounded-lg transition-colors"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </button>
+          </div>
 
-              {data.map((item) => {
-                const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`;
-                const strokeDashoffset = -accumulatedOffset;
-                accumulatedOffset += (item.percentage / 100) * circumference;
-
-                const isSelected = selectedStatus === item.status;
-
-                return (
-                  <circle
-                    key={item.status}
-                    cx="50"
-                    cy="50"
-                    r={radius}
-                    stroke={item.color}
-                    strokeWidth={isSelected ? '14' : '11'}
-                    strokeDasharray={strokeDasharray}
-                    strokeDashoffset={strokeDashoffset}
-                    fill="transparent"
-                    className="cursor-pointer transition-all duration-300"
-                    onMouseEnter={() => setSelectedStatus(item.status)}
-                    onMouseLeave={() => setSelectedStatus(null)}
-                    onClick={() => onNavigateToEligibility(item.status)}
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Center Label */}
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-xl font-extrabold text-[#2E4A25] tabular-nums">
-                {selectedStatus
-                  ? data.find((d) => d.status === selectedStatus)?.count.toLocaleString()
-                  : totalRecords.toLocaleString()}
-              </span>
-              <span className="text-[10px] font-medium text-[#505050] max-w-[80px] truncate">
-                {selectedStatus || 'Total Records'}
-              </span>
+          {/* Semi-Circular Gauge Arch (Inspired by Screenshot 2's 45% Arch) */}
+          <div className="my-2 flex flex-col items-center">
+            <div className="relative w-44 h-28 flex items-end justify-center">
+              <svg className="w-44 h-28 overflow-visible" viewBox="0 0 160 95">
+                <defs>
+                  <linearGradient id="pmexArchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#AAD39C" />
+                    <stop offset="50%" stopColor="#9ED08D" />
+                    <stop offset="100%" stopColor="#FFFFFF" />
+                  </linearGradient>
+                </defs>
+                {/* Background Track Arch */}
+                <path
+                  d="M 18 82 A 62 62 0 0 1 142 82"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
+                {/* Active Progress Arch */}
+                <path
+                  d="M 18 82 A 62 62 0 0 1 142 82"
+                  fill="none"
+                  stroke="url(#pmexArchGrad)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={halfCircumference}
+                  strokeDashoffset={archOffset}
+                  className="transition-all duration-700 ease-out"
+                />
+              </svg>
+              <div className="absolute bottom-1 flex flex-col items-center">
+                <span className="text-2xl font-extrabold text-white tabular-nums tracking-tight">
+                  {selectedItem.percentage}%
+                </span>
+              </div>
             </div>
+
+            {/* Center Document Emblem */}
+            <div className="mt-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 border border-white/25 backdrop-blur-xs">
+              <FileCheck className="h-5 w-5 text-[#AAD39C]" />
+            </div>
+          </div>
+
+          {/* Bottom Metric Figures */}
+          <div className="text-center mt-1">
+            <p className="text-xs font-medium text-[#AAD39C]">
+              {selectedItem.status} Records
+            </p>
+            <p className="text-2xl font-extrabold text-white tabular-nums tracking-tight mt-0.5">
+              {selectedItem.count.toLocaleString()}
+            </p>
+            <p className="text-[11px] text-white/75 tabular-nums mt-0.5">
+              Out of {totalRecords.toLocaleString()} total records
+            </p>
+          </div>
+
+          {/* Interactive Status Selector Pills */}
+          <div
+            className="mt-4 pt-3 border-t border-white/15 flex items-center justify-center gap-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {data.map((item) => (
+              <button
+                key={item.status}
+                type="button"
+                onClick={() => setActiveStatus(item.status)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
+                  activeStatus === item.status
+                    ? 'bg-white text-[#2E4A25] shadow-2xs'
+                    : 'bg-white/10 text-white/80 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                {item.status}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Status items breakdown list */}
-        <div className="sm:col-span-7 space-y-2.5">
+        {/* Right Column: Stacked Clean White Floating Cards for each Status */}
+        <div className="sm:col-span-6 flex flex-col justify-between gap-3">
           {data.map((item) => {
-            const isHovered = selectedStatus === item.status;
+            const isSelected = activeStatus === item.status;
+            const r = 16;
+            const circ = 2 * Math.PI * r;
+            const offset = circ - (item.percentage / 100) * circ;
+
             return (
               <div
                 key={item.status}
-                onMouseEnter={() => setSelectedStatus(item.status)}
-                onMouseLeave={() => setSelectedStatus(null)}
+                onMouseEnter={() => setActiveStatus(item.status)}
                 onClick={() => onNavigateToEligibility(item.status)}
-                className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                  isHovered
-                    ? 'border-[#3F9A4B] bg-[#F8FBF0]'
-                    : 'border-[#E0E0DA]/80 bg-white hover:border-[#AAD39C]'
+                className={`pmex-floating-card p-4 cursor-pointer flex items-center justify-between gap-3 ${
+                  isSelected ? 'border-[#3F9A4B] bg-[#F8FBF0]/60' : ''
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8FBF0] border border-[#EDEAE0]">
                     {getStatusIcon(item.status)}
-                    <span className="text-xs font-semibold text-[#2E4A25]">
-                      {item.status}
-                    </span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="font-bold text-[#2E4A25] tabular-nums">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-[#676767]">{item.status}</p>
+                    <p className="text-lg font-extrabold text-[#2E4A25] tabular-nums leading-tight mt-0.5">
                       {item.count.toLocaleString()}
-                    </span>
-                    <span className="text-[11px] font-medium text-[#505050] tabular-nums w-10 text-right">
-                      {item.percentage}%
-                    </span>
+                    </p>
+                    <p className="text-[10px] text-[#959085] truncate mt-0.5">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
 
-                {/* Micro Progress Bar */}
-                <div className="mt-1.5 h-1.5 w-full rounded-full bg-[#E0E0DA]/50 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${item.percentage}%`,
-                      backgroundColor: item.color,
-                    }}
-                  />
+                {/* Mini Radial Ring on the Right */}
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                  <svg className="h-10 w-10" viewBox="0 0 40 40">
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r={r}
+                      stroke="#EEF0E8"
+                      strokeWidth="2.5"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r={r}
+                      stroke={item.color}
+                      strokeWidth="2.5"
+                      strokeDasharray={circ}
+                      strokeDashoffset={offset}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      transform="rotate(-90 20 20)"
+                    />
+                  </svg>
+                  <span className="absolute text-[9px] font-bold text-[#2E4A25] tabular-nums">
+                    {Math.round(item.percentage)}%
+                  </span>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
-
-      {/* Summary Footer bar */}
-      <div className="mt-4 pt-3 border-t border-[#E0E0DA]/70 flex items-center justify-between text-xs">
-        <span className="text-[#505050]">
-          Last batch evaluated: <strong className="text-[#2E4A25]">Today, 09:05 AM</strong>
-        </span>
-        <button
-          type="button"
-          onClick={() => onNavigateToEligibility()}
-          className="text-[#3F9A4B] hover:text-[#2E4A25] font-semibold transition-colors"
-        >
-          Run Batch Verification →
-        </button>
       </div>
     </div>
   );

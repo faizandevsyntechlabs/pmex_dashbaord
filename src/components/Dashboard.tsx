@@ -1,13 +1,18 @@
-import React from 'react';
-import { StatMetric, ActivityDataPoint, EligibilityStatusData, RecentActivityRecord, TimeRange } from '../types/dashboard';
+import React, { useState } from 'react';
+import {
+  StatMetric,
+  ActivityDataPoint,
+  EligibilityStatusData,
+  RecentActivityRecord,
+  TimeRange,
+} from '../types/dashboard';
 import { StatCard } from './StatCard';
-import { WelcomeBanner } from './WelcomeBanner';
 import { ActivityChart } from './ActivityChart';
 import { EligibilityOverview } from './EligibilityOverview';
 import { RecentActivity } from './RecentActivity';
 import { QuickActions } from './QuickActions';
 import { PMExModuleId } from './DashboardSidebar';
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { RefreshCw, ChevronDown } from 'lucide-react';
 
 interface DashboardProps {
   stats: StatMetric[];
@@ -40,50 +45,81 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onRefreshData,
   isRefreshing = false,
 }) => {
+  const [contextFilter, setContextFilter] = useState<'All Modules' | 'Spreadsheets & Files' | 'Eligibility & Compliance'>('All Modules');
+
   return (
-    <div className="space-y-6">
-      {/* 1. TOP TITLE BAR WITH H1 ORANGE EMPHASIS SPAN */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+    <div className="space-y-8">
+      {/* 1. TOP DASHBOARD TITLE & CONTEXT SWITCHER (Inspired by Screenshot 2's "Dashboard ↻ / Financial ⌄") */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          {/* H1 strictly adheres to rule: Orange #E85D3F used ONLY for H1 headline emphasis span */}
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2E4A25] tracking-tight">
-            PMEx Operations <span className="text-[#E85D3F]">Dashboard</span>
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-[#505050]">
-            Real-time analytics for PMEx spreadsheets, eligibility verification, and system audits.
-          </p>
+          <div className="flex items-center gap-3">
+            {/* STRICT RULE: #E85D3F used ONLY for the emphasized span inside main H1 */}
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2E4A25] tracking-tight">
+              PMEx <span className="text-[#E85D3F]">Dashboard</span>
+            </h1>
+
+            {onRefreshData && (
+              <button
+                type="button"
+                onClick={onRefreshData}
+                disabled={isRefreshing}
+                aria-label="Refresh dashboard data"
+                title="Refresh portal metrics"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#EDEAE0] bg-white text-[#2E4A25] hover:border-[#3F9A4B] hover:text-[#3F9A4B] transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-[#3F9A4B]' : ''}`} />
+              </button>
+            )}
+          </div>
+
+          {/* Subtitle / Context Selector */}
+          <div className="mt-1.5 flex items-center gap-3">
+            <div className="relative inline-flex items-center">
+              <select
+                value={contextFilter}
+                onChange={(e) => setContextFilter(e.target.value as typeof contextFilter)}
+                aria-label="Select dashboard view context"
+                className="appearance-none bg-transparent pr-5 text-xs font-semibold text-[#676767] hover:text-[#2E4A25] cursor-pointer focus:outline-none"
+              >
+                <option value="All Modules">Operations & Eligibility Overview</option>
+                <option value="Spreadsheets & Files">Spreadsheets & Repository Focus</option>
+                <option value="Eligibility & Compliance">Compliance & Audit Focus</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-[#959085]" />
+            </div>
+
+            <span className="text-[#E0E0DA]">·</span>
+            <span className="text-xs text-[#959085]">
+              Welcome back, Super Admin
+            </span>
+          </div>
         </div>
 
+        {/* Right: Quiet Workspace Sync Pill */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          {onRefreshData && (
-            <button
-              type="button"
-              onClick={onRefreshData}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#E0E0DA] bg-white px-3 py-2 text-xs font-semibold text-[#505050] hover:text-[#2E4A25] hover:border-[#3F9A4B] transition-colors disabled:opacity-50"
-              title="Refresh portal statistics"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 text-[#3F9A4B] ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Syncing...' : 'Sync Data'}</span>
-            </button>
-          )}
-
-          <div className="flex items-center gap-1.5 rounded-xl bg-[#F8FBF0] px-3 py-2 text-xs font-medium text-[#2E4A25] border border-[#E0E0DA]">
-            <span className="h-2 w-2 rounded-full bg-[#3F9A4B] animate-pulse" />
-            <span className="tabular-nums">Live Engine Active</span>
+          <div className="inline-flex items-center gap-2 rounded-xl bg-[#EEF0E8] px-3 py-1.5 text-xs font-medium text-[#2A3828] border border-[#E0E0DA]">
+            <span className="h-2 w-2 rounded-full bg-[#3F9A4B]" />
+            <span>Univer & Laravel Connected</span>
           </div>
         </div>
       </div>
 
-      {/* 2. BENTO WELCOME BANNER & HEALTH GAUGES (Design inspiration from Vision UI) */}
-      <WelcomeBanner
-        userName="Super Admin"
-        onExploreAudit={() => onNavigateToModule('History')}
-        onQuickVerify={() => onNavigateToModule('Eligibility')}
-      />
+      {/* 2. KPI SUMMARY CARDS (Inspired by Screenshot 2's top floating cards with radial rings) */}
+      <section aria-label="Portal Summary Metrics" className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <span className="text-[10px] font-bold tracking-[0.12em] text-[#3F9A20] uppercase block">
+              Key Indicators
+            </span>
+            <h2 className="text-base font-extrabold text-[#2E4A25] tracking-tight">
+              Portal Summary
+            </h2>
+          </div>
+          <span className="text-xs text-[#959085]">
+            Click any card to open module
+          </span>
+        </div>
 
-      {/* 3. KPI / SUMMARY CARDS ROW */}
-      <section aria-label="Key Performance Indicators">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <StatCard
@@ -95,7 +131,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </section>
 
-      {/* 4. ANALYTICS & ACTIVITY OVERVIEW SECTION */}
+      {/* 3. ELIGIBILITY OVERVIEW (ARCH GAUGE + STATUS CARDS) & RECENT ACTIVITY ROW */}
+      <section aria-label="Eligibility Status and Recent Activity">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <EligibilityOverview
+            data={eligibilityBreakdown}
+            onNavigateToEligibility={(status) => onNavigateToModule('Eligibility', status)}
+          />
+
+          <RecentActivity
+            activities={recentActivities}
+            onSelectActivity={onSelectActivity}
+            onNavigateToHistory={() => onNavigateToModule('History')}
+            onNavigateToModule={(mod) => onNavigateToModule(mod as PMExModuleId)}
+          />
+        </div>
+      </section>
+
+      {/* 4. ACTIVITY OVERVIEW SPLINE CHART & STACKED METRICS */}
       <section aria-label="Activity Analytics">
         <ActivityChart
           data7d={activity7d}
@@ -107,26 +160,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         />
       </section>
 
-      {/* 5. ELIGIBILITY BREAKDOWN & RECENT ACTIVITY DUAL ROW */}
-      <section aria-label="Eligibility & Audit Records">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-          {/* Eligibility status breakdown (6 cols) */}
-          <EligibilityOverview
-            data={eligibilityBreakdown}
-            onNavigateToEligibility={(status) => onNavigateToModule('Eligibility', status)}
-          />
-
-          {/* Recent activity audit trail (6 cols) */}
-          <RecentActivity
-            activities={recentActivities}
-            onSelectActivity={onSelectActivity}
-            onNavigateToHistory={() => onNavigateToModule('History')}
-            onNavigateToModule={(mod) => onNavigateToModule(mod as PMExModuleId)}
-          />
-        </div>
-      </section>
-
-      {/* 6. QUICK ACTIONS GRID */}
+      {/* 5. QUICK ACTIONS */}
       <section aria-label="Quick Operations">
         <QuickActions
           onCreateSpreadsheet={onCreateSpreadsheet}

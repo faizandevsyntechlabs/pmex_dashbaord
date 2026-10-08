@@ -8,13 +8,11 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronRight,
-  HelpCircle,
   PanelLeftClose,
   PanelLeft,
   FileBarChart2,
-  ExternalLink,
+  Settings,
 } from 'lucide-react';
-import badgeImage from '../assets/images/pmex_portal_badge_1790968201809.jpg';
 
 export type PMExModuleId =
   | 'Dashboard'
@@ -53,7 +51,7 @@ const NAV_ITEMS: NavItem[] = [
     id: 'Eligibility',
     label: 'Eligibility',
     icon: FileCheck,
-    badge: '12',
+    badge: '364',
     subItems: ['Eligibility Verification', 'Batch Check', 'Status Matrix'],
   },
   { id: 'File Manager', label: 'File Manager', icon: FolderArchive, badge: '128' },
@@ -113,110 +111,138 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-[#1B3316]/25 backdrop-blur-xs lg:hidden"
           onClick={onCloseMobile}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Lightweight, Spacious Floating Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#2E4A25] text-white transition-all duration-300 ease-in-out lg:static ${
-          collapsed ? 'w-20' : 'w-64'
-        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} border-r border-[#2E4A25]/40 shadow-xl lg:shadow-none`}
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white border-r border-[#EDEAE0] transition-all duration-300 ease-out lg:static ${
+          collapsed ? 'w-[84px]' : 'w-[264px]'
+        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
         aria-label="Main Navigation"
       >
-        {/* Brand Area */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-[#AAD39C]/30 overflow-hidden shadow-sm">
-              <img
-                src={badgeImage}
-                alt="PMEX Logo"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  // Fallback to SVG lettermark if image fails
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  if (target.parentElement) {
-                    target.parentElement.innerHTML = `<span class="text-sm font-black text-[#AAD39C]">P</span>`;
-                  }
-                }}
-              />
+        {/* Top Brand Area */}
+        <div className="flex h-20 items-center justify-between px-5 shrink-0">
+          <button
+            type="button"
+            onClick={() => onSelectModule('Dashboard')}
+            className="flex items-center gap-3 overflow-hidden text-left focus-visible:outline-2 focus-visible:outline-[#3F9A4B] rounded-xl"
+          >
+            {/* Modernized PMEx Portal Geometric Emblem (inspired by both Screenshot 1 & 2) */}
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#F8FBF0] border border-[#AAD39C]/60 shadow-2xs">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3L4 20H8.5L12 12L15.5 20H20L12 3Z"
+                  fill="#2E4A25"
+                />
+                <path
+                  d="M9.5 15.5H14.5L16 19H8L9.5 15.5Z"
+                  fill="#3F9A4B"
+                />
+              </svg>
             </div>
 
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-base font-bold tracking-tight text-white truncate">
-                  PMEX Portal
+                <span className="text-[15px] font-extrabold tracking-tight text-[#2E4A25] truncate">
+                  PMEx Portal
                 </span>
-                <span className="text-[11px] font-medium text-[#AAD39C] truncate">
-                  Enterprise Analytics
+                <span className="text-[11px] font-medium text-[#959085] truncate">
+                  Operations Workspace
                 </span>
               </div>
             )}
-          </div>
+          </button>
 
           <button
             type="button"
             onClick={onToggleCollapse}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="hidden lg:flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-[#AAD39C]"
+            className="hidden lg:flex h-8 w-8 items-center justify-center rounded-xl text-[#959085] hover:text-[#2E4A25] hover:bg-[#F8FBF0] transition-colors focus-visible:outline-2 focus-visible:outline-[#3F9A4B]"
           >
             {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </button>
         </div>
 
-        {/* Section Header */}
+        {/* Eyebrow Section Label */}
         {!collapsed && (
-          <div className="px-5 pt-4 pb-2">
-            <span className="text-[10px] font-semibold tracking-wider text-[#AAD39C]/70 uppercase">
+          <div className="px-6 pt-2 pb-2">
+            <span className="text-[10px] font-bold tracking-[0.12em] text-[#3F9A20] uppercase">
               Main Navigation
             </span>
           </div>
         )}
 
-        {/* Navigation List */}
-        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeModule === item.id;
-            const hasSub = item.subItems && item.subItems.length > 0;
-            const isOpen = !!openDropdowns[item.id];
-            const Icon = item.icon;
+        {/* Floating Dock / Navigation Container */}
+        <nav className="flex-1 overflow-y-auto px-3.5 py-2">
+          <div
+            className={`space-y-1.5 ${
+              collapsed
+                ? 'bg-[#3F9A4B] py-4 px-2 rounded-[28px] shadow-[0_12px_28px_-6px_rgba(63,154,75,0.4)] flex flex-col items-center'
+                : 'bg-[#F8FBF0]/80 p-2 rounded-2xl border border-[#EDEAE0]/80'
+            }`}
+          >
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeModule === item.id;
+              const hasSub = item.subItems && item.subItems.length > 0;
+              const isOpen = !!openDropdowns[item.id];
+              const Icon = item.icon;
 
-            return (
-              <div key={item.id} className="relative group">
-                <button
-                  type="button"
-                  onClick={() => handleNavClick(item)}
-                  className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#AAD39C] ${
-                    isActive
-                      ? 'bg-[#3F9A4B] text-white shadow-sm font-semibold'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
-                  }`}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-white/5 text-[#AAD39C] group-hover:bg-white/10 group-hover:text-white'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                    </span>
+              if (collapsed) {
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleNavClick(item)}
+                    title={item.label}
+                    className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-150 ${
+                      isActive
+                        ? 'bg-white text-[#2E4A25] shadow-sm scale-105'
+                        : 'text-white/85 hover:bg-white/15 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                );
+              }
 
-                    {!collapsed && (
+              return (
+                <div key={item.id} className="relative group">
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick(item)}
+                    className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-[13px] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#3F9A4B] ${
+                      isActive
+                        ? 'bg-[#3F9A4B] text-white font-semibold shadow-[0_6px_16px_-4px_rgba(63,154,75,0.4)]'
+                        : 'text-[#505050] font-medium hover:bg-white hover:text-[#2E4A25] hover:shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-white/20 text-white'
+                            : 'bg-white text-[#3F9A4B] border border-[#EDEAE0] group-hover:border-[#AAD39C]'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                      </span>
+
                       <span className="truncate text-left">{item.label}</span>
-                    )}
-                  </div>
+                    </div>
 
-                  {!collapsed && (
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
                       {item.badge && !hasSub && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-semibold tabular-nums rounded-md bg-white/15 text-[#AAD39C]">
+                        <span
+                          className={`px-1.5 py-0.5 text-[10px] font-semibold tabular-nums rounded-md ${
+                            isActive
+                              ? 'bg-white/20 text-white'
+                              : 'bg-[#EEF0E8] text-[#2A3828]'
+                          }`}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -224,7 +250,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                       {hasSub && (
                         <span
                           onClick={(e) => toggleDropdown(item.id, e)}
-                          className="p-1 text-white/60 hover:text-white rounded"
+                          className={`p-1 rounded transition-colors ${
+                            isActive
+                              ? 'text-white/80 hover:text-white'
+                              : 'text-[#959085] hover:text-[#2E4A25]'
+                          }`}
                         >
                           {isOpen ? (
                             <ChevronDown className="h-3.5 w-3.5" />
@@ -234,70 +264,66 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         </span>
                       )}
                     </div>
-                  )}
-                </button>
+                  </button>
 
-                {/* Submenu (When expanded) */}
-                {!collapsed && hasSub && isOpen && (
-                  <div className="mt-1 ml-9 pl-2 space-y-1 border-l border-white/15">
-                    {item.subItems?.map((sub) => (
-                      <button
-                        key={sub}
-                        type="button"
-                        onClick={(e) => handleSubClick(item.id, sub, e)}
-                        className="w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors block truncate"
-                      >
-                        {sub}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {/* Submenu */}
+                  {hasSub && isOpen && (
+                    <div className="mt-1 ml-9 pl-2.5 space-y-1 border-l border-[#E0E0DA]">
+                      {item.subItems?.map((sub) => (
+                        <button
+                          key={sub}
+                          type="button"
+                          onClick={(e) => handleSubClick(item.id, sub, e)}
+                          className="w-full text-left text-xs py-1.5 px-2.5 rounded-lg text-[#676767] hover:text-[#2E4A25] hover:bg-white transition-colors block truncate"
+                        >
+                          {sub}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Footer / Helper Card (Visual inspiration from vision UI card) */}
-        {!collapsed ? (
-          <div className="p-3 m-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
-            <div className="flex items-start gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#3F9A4B] text-white">
-                <HelpCircle className="h-4 w-4" />
-              </div>
+        {/* Bottom Workspace Settings / Status */}
+        <div className="p-4 border-t border-[#EDEAE0]">
+          {!collapsed ? (
+            <div className="flex items-center justify-between rounded-2xl bg-[#F8FBF0] px-3.5 py-3 border border-[#EDEAE0]">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-white">PMEx System Guide</p>
-                <p className="text-[11px] text-white/70 leading-tight mt-0.5">
-                  Spreadsheet audit rules & eligibility compliance
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#3F9A4B]" />
+                  <p className="text-xs font-bold text-[#2E4A25] truncate">
+                    Univer Engine Active
+                  </p>
+                </div>
+                <p className="text-[11px] text-[#959085] truncate mt-0.5">
+                  Laravel Sync · Connected
                 </p>
               </div>
-            </div>
-            <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
-              <span className="text-[#AAD39C] font-medium">v2.4.0 Production</span>
-              <a
-                href="#docs"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onSelectModule('Reporting', 'Audit Reports');
-                }}
-                className="text-white hover:text-[#AAD39C] flex items-center gap-1 transition-colors"
+              <button
+                type="button"
+                onClick={() => onSelectModule('Admin Panel', 'System Settings')}
+                aria-label="System Settings"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white border border-[#E0E0DA] text-[#676767] hover:text-[#3F9A4B] hover:border-[#AAD39C] transition-colors"
               >
-                <span>Docs</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
+                <Settings className="h-4 w-4" />
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="p-3 flex justify-center">
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              title="Expand sidebar"
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-[#AAD39C] hover:text-white transition-colors"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => onSelectModule('Admin Panel', 'System Settings')}
+                title="System Settings"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F8FBF0] border border-[#EDEAE0] text-[#676767] hover:text-[#3F9A4B] transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </aside>
     </>
   );
